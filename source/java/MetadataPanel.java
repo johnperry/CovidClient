@@ -167,19 +167,14 @@ public class MetadataPanel extends JPanel implements ActionListener {
 	}
 	
 	private String getStudyPHI(String phiPatientID, File dir) {
-		System.out.println("getStudyPHI: lookup "+phiPatientID);
 		Study[] indexedStudies = Index.getInstance().listStudiesFor(phiPatientID);
-		System.out.println("getStudyPHI: got "+indexedStudies.length+" studies from index");
 		try {
 			DicomObject dob = getFirstDicomObject(dir);
 			String studyDate = dob.getStudyDate();
 			String accession = dob.getAccessionNumber();
-			System.out.println("getStudyPHI: "+studyDate+ " / " +accession);
 			for (Study study : indexedStudies) {
-				System.out.println("getStudyPHI: checking "+study.toString()); 
 				if (study.anonAccession.equals(accession)
 						&& study.anonDate.equals(studyDate)) {
-					System.out.println("getStudyPHI: got match: "+ study.phiDate+ " / "+study.phiAccession);
 					studyDate = study.phiDate;
 					accession = study.phiAccession;
 					studyDate = studyDate.substring(0,4) + "." +
@@ -188,9 +183,8 @@ public class MetadataPanel extends JPanel implements ActionListener {
 					return studyDate + "/" + accession;
 				}
 			}
-			System.out.println("getStudyPHI: no match");
 		}
-		catch (Exception ex) { ex.printStackTrace(); }
+		catch (Exception ex) { }
 		return "";
 	}
 	
