@@ -154,7 +154,7 @@ public class WelcomePanel extends BasePanel {
 				while ((k1 >= 0) && !Character.isWhitespace(messageText.charAt(k1))) k1--;
 				while ((k2 < messageText.length()) && !Character.isWhitespace(messageText.charAt(k2))) k2++;
 				if (messageText.substring(k1+1, k2).equals("here.")) {
-					Desktop.getDesktop().browse(new URI("http://www.accumetra.com"));
+					Desktop.getDesktop().browse(new URI("http://open-qic.org"));
 				}
 			}
 			catch (Exception ex) { ex.printStackTrace(); }
@@ -173,12 +173,14 @@ public class WelcomePanel extends BasePanel {
 	}
 	
 	String messageText = 
-		"Accumetra is assembling a free, open-source repository of de-identified COVID-19-related imaging data for " +
+		"The Quantitative Imaging for COVID-19 project (QIC) is assembling a free, open-source repository of " +
+		"de-identified COVID-19-related imaging data for " +
 		"research and education. Medical institutions interested in joining this international collaboration are " +
-		"invited to submit de-identified imaging data for inclusion in this repository. " +
-		"The CovidClient program is a free open-source tool for collecting and de-identifying DICOM studies " +
+		"invited to submit de-identified imaging data for inclusion in the repository. " +
+		"\n\n" +
+		"The CovidClient program is a free, open-source tool for collecting and de-identifying DICOM studies " +
 		"to prepare them for submission. It may be used to ensure privacy by removing protected " +
 		"health information from your DICOM imaging studies." +
 		"\n\n" +
-		"You can learn more about the Accumetra COVID-19 Imaging Data Repository initiative here.";
+		"You can learn more about the QIC initiative here.";
 }

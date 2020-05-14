@@ -8,6 +8,7 @@ import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.event.*;
 import org.apache.log4j.*;
+import org.rsna.ctp.stdstages.anonymizer.dicom.DAScript;
 import org.rsna.ui.ApplicationProperties;
 import org.rsna.ui.SourcePanel;
 import org.rsna.util.BrowserUtil;
@@ -15,13 +16,16 @@ import org.rsna.util.FileUtil;
 import org.rsna.util.ImageIOTools;
 import org.rsna.util.JarUtil;
 import org.rsna.util.StringUtil;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 /**
  * The Anonymizer program base class.
  */
 public class CovidClient extends JFrame implements ChangeListener {
 
-    private String					windowTitle = "CovidClient - version 1";
+    private String					windowTitle = "CovidClient - version 2";
     private MainPanel				mainPanel;
     private JPanel					splitPanel;
     private WelcomePanel			welcomePanel;
@@ -71,6 +75,35 @@ public class CovidClient extends JFrame implements ChangeListener {
 
 		Configuration config = Configuration.getInstance();
 		
+		//Initialize the SITEID
+		String propsSITEID = config.getProps().getProperty("SITEID");
+		if (propsSITEID == null) {
+			long t = System.currentTimeMillis()/60L;
+			propsSITEID = Long.toString(t);
+			propsSITEID = propsSITEID.substring(propsSITEID.length() - 6);
+			config.getProps().setProperty("SITEID", propsSITEID);
+			config.store();
+		}
+		File daScriptFile = new File(config.dicomScriptFile);
+		DAScript daScript = DAScript.getInstance(daScriptFile);
+		Document daDoc = daScript.toXML();
+		Element daRoot = daDoc.getDocumentElement();
+		Node child = daRoot.getFirstChild();
+		Element e = null;
+		while (child != null) {
+			if (child.getNodeName().equals("p")) {
+				e = (Element)child;
+				if (e.getAttribute("t").equals("SITEID")) break;
+			}
+			child = child.getNextSibling();
+		}
+		String scriptSITEID = e.getTextContent().trim();
+		if (!scriptSITEID.equals(propsSITEID)) {
+			e.setTextContent(propsSITEID);
+			FileUtil.setText(daScriptFile, daScript.toXMLString());
+		}
+		
+		//Put the build date/time in the window title
 		try {
 			File program = new File("CovidClient.jar");
 			String date = JarUtil.getManifestAttributes(program).get("Date");
@@ -185,6 +218,7 @@ public class CovidClient extends JFrame implements ChangeListener {
 			Configuration config = Configuration.getInstance();
 			config.getIntegerTable().close();
 			Index.getInstance().close();
+			SCPPanel.getInstance().shutdown();
 			Point p = getLocation();
 			config.put("x", Integer.toString(p.x));
 			config.put("y", Integer.toString(p.y));

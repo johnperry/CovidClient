@@ -110,6 +110,10 @@ public class SCPPanel extends BasePanel implements ActionListener, KeyListener {
 		new AnonymizerThread().start();
 	}
 	
+	public void shutdown() {
+		stopSCP();
+	}
+	
 	public String getAET() {
 		return aet.getText().trim();
 	}
@@ -271,21 +275,15 @@ public class SCPPanel extends BasePanel implements ActionListener, KeyListener {
 				String anonSOPInstanceUID = dob.getSOPInstanceUID();
 				String anonStudyInstanceUID = dob.getStudyInstanceUID();
 				String anonSeriesInstanceUID = dob.getSeriesInstanceUID();
-				String anonStudyDate = dob.getStudyDate();
-				String anonStudyTime = dob.getStudyTime().trim();
-				int k = anonStudyTime.indexOf(".");
-				k = (k >= 0) ? k : anonStudyTime.length();
-				anonStudyTime = anonStudyTime.substring(0,k);
-				if (anonStudyTime.length() > 0) anonStudyTime = "T" + anonStudyTime;
-				String anonStudyDateTime = anonStudyDate + anonStudyTime;
+				String anonStudyDate = dob.getStudyDate();				
 				String anonSeriesNumber = dob.getSeriesNumber();
 				String anonInstanceNumber = dob.getInstanceNumber();
 				String anonAccessionNumber = dob.getAccessionNumber();
 				String hash = "";
-				try { hash = "-" + AnonymizerFunctions.hash(anonStudyInstanceUID, 4); }
+				try { hash = "-" + AnonymizerFunctions.hash(anonStudyInstanceUID, 3); }
 				catch (Exception unable) { }
 				File imgdir = new File(storageDir, anonPtID + "/" 
-								+ "Study-"+modality+"-"+anonStudyDateTime+hash + "/" 
+								+ "Study-"+modality+"-"+anonStudyDate+hash + "/" 
 								+ "Series-"+anonSeriesNumber);
 				imgdir.mkdirs();
 				File dest = new File(imgdir, "Image-"+anonInstanceNumber+".dcm");

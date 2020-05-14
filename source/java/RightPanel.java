@@ -132,50 +132,55 @@ public class RightPanel extends JPanel
 
 	// Anonymize the selected file(s).
 	private void anonymize(File file) {
-		String filterScript = FilterPanel.getInstance().getText().trim();
-		boolean filterSRs = FilterPanel.getInstance().getFilterSRs();
+		FilterPanel fp = FilterPanel.getInstance();
+		String filterScript = fp.getText().trim();
+		boolean filterSRs = fp.getFilterSRs();
+		boolean filterSCs = fp.getFilterSCs();
 		boolean filterResult = true;
 		if (file.isFile()) {
-			resultsPane.newItem(file.getAbsolutePath());
-			DicomObject dob;
-			if ( ((dob=getDicomObject(file)) != null)
-					&& ( !filterSRs || !dob.isSR() )
-					&& ( filterResult=((filterScript.length() == 0) || dob.matches(filterScript)) ) ) {
-				File temp;
-				File storageDir;
-				try { 
-					storageDir = Configuration.getInstance().getStorageDir();
-					storageDir.mkdirs();
-					temp = File.createTempFile("TEMP-", ".dcm", storageDir);
-				}
-				catch (Exception ex) {
-					resultsPane.print(Color.red, "Unable to copy file.\n");
-					return;
-				}
-				String origPtName = dob.getPatientName();
-				String origPtID = dob.getPatientID();
-				String origStudyDate = dob.getStudyDate();
-				String origAccessionNumber = dob.getAccessionNumber();
+			try {
+				resultsPane.newItem(file.getAbsolutePath());
+				DicomObject dob;
+				if ( ((dob=getDicomObject(file)) != null)
+						&& ( dob.isImage() )
+						&& ( !filterSCs || !dob.isSecondaryCapture() )
+						&& ( !filterSRs || !dob.isSR() )
+						&& ( filterResult=((filterScript.length() == 0) || dob.matches(filterScript)) ) ) {
+					File temp;
+					File storageDir;
+					try { 
+						storageDir = Configuration.getInstance().getStorageDir();
+						storageDir.mkdirs();
+						temp = File.createTempFile("TEMP-", ".dcm", storageDir);
+					}
+					catch (Exception ex) {
+						resultsPane.print(Color.red, "Unable to copy file.\n");
+						return;
+					}
+					String origPtName = dob.getPatientName();
+					String origPtID = dob.getPatientID();
+					String origStudyDate = dob.getStudyDate();
+					String origAccessionNumber = dob.getAccessionNumber();
 
-				String result = "";
-				DAScript dicomScript = DAScript.getInstance( new File(dicomScriptFile) );
-				LookupTable lookupTable = LookupTable.getInstance(new File(lookupTableFile) );
-				dob.copyTo(temp);
-				result =
-					DICOMAnonymizer.anonymize(
-						temp, temp,
-						dicomScript.toProperties(), lookupTable.getProperties(), integerTable,
-						forceIVRLE, renameToSOPIUID).isOK() ? "" : "failed";;
+					String result = "";
+					DAScript dicomScript = DAScript.getInstance( new File(dicomScriptFile) );
+					LookupTable lookupTable = LookupTable.getInstance(new File(lookupTableFile) );
+					dob.copyTo(temp);
+					result =
+						DICOMAnonymizer.anonymize(
+							temp, temp,
+							dicomScript.toProperties(), lookupTable.getProperties(), integerTable,
+							forceIVRLE, renameToSOPIUID).isOK() ? "" : "failed";;
 
-				//Report the results
-				if (!result.equals("")) {
-					resultsPane.print(Color.red,"Failed\n");
-				}
-				else {
-					resultsPane.print(Color.black,"OK\n");
-					// Get the spoke name
-					Properties daprops = dicomScript.toProperties();
-					String spokeName = daprops.getProperty("param.SITEID");
+					//Report the results
+					if (!result.equals("")) {
+						resultsPane.print(Color.red,"Failed\n");
+					}
+					else {
+						resultsPane.print(Color.black,"OK\n");
+						// Get the spoke name
+						Properties daprops = dicomScript.toProperties();
+						String spokeName = daprops.getProperty("param.SITEID");
 
 					//Figure out where to put the temp file.
 					//It is already in the root of the storageDir.
@@ -188,20 +193,14 @@ public class RightPanel extends JPanel
 					String anonStudyInstanceUID = dob.getStudyInstanceUID();
 					String anonSeriesInstanceUID = dob.getSeriesInstanceUID();
 					String anonStudyDate = dob.getStudyDate();
-					String anonStudyTime = dob.getStudyTime();
-					int k = anonStudyTime.indexOf(".");
-					k = (k >= 0) ? k : anonStudyTime.length();
-					anonStudyTime = anonStudyTime.substring(0,k);
-					if (anonStudyTime.length() > 0) anonStudyTime = "T" + anonStudyTime;
-					String anonStudyDateTime = anonStudyDate + anonStudyTime;
 					String anonSeriesNumber = dob.getSeriesNumber();
 					String anonInstanceNumber = dob.getInstanceNumber();
 					String anonAccessionNumber = dob.getAccessionNumber();
 					String hash = "";
-					try { hash = "-" + AnonymizerFunctions.hash(anonStudyInstanceUID, 4); }
+					try { hash = "-" + AnonymizerFunctions.hash(anonStudyInstanceUID, 3); }
 					catch (Exception unable) { }
 					File imgdir = new File(storageDir, anonPtID + "/" 
-									+ "Study-"+modality+"-"+anonStudyDateTime+hash + "/" 
+									+ "Study-"+modality+"-"+anonStudyDate+hash + "/" 
 									+ "Series-"+anonSeriesNumber);
 					imgdir.mkdirs();
 					File dest = new File(imgdir, "Image-"+anonInstanceNumber+".dcm");
@@ -210,23 +209,36 @@ public class RightPanel extends JPanel
 					if (dest.exists()) dest.delete();
 					temp.renameTo(dest);
 
-					//Update the index
-					Index index = Index.getInstance();
-					index.addPatient(origPtName, origPtID, anonPtName, anonPtID);
-					index.addStudy(origPtID, origStudyDate, origAccessionNumber, anonStudyDate, anonAccessionNumber);
+						//Update the index
+						Index index = Index.getInstance();
+						index.addPatient(origPtName, origPtID, anonPtName, anonPtID);
+						index.addStudy(origPtID, origStudyDate, origAccessionNumber, anonStudyDate, anonAccessionNumber);
+					}
+				}
+				else {
+					if (dob == null) resultsPane.println(Color.red,"    File rejected (not a DICOM file)");
+					else if (!dob.isImage()) resultsPane.println(Color.red,"    File rejected (not an image)");
+					else if (filterSRs && dob.isSR()) resultsPane.println(Color.red,"    File rejected (Structured Report)");
+					else if (filterSCs && dob.isSecondaryCapture()) resultsPane.println(Color.red,"    File rejected (Secondary Capture)");
+					else if (!filterResult) resultsPane.println(Color.red,"    File rejected (filter)");
+					else resultsPane.println(Color.red,"    File rejected (unknown reason)");
 				}
 			}
-			else {
-				if (dob == null) resultsPane.print(Color.red,"File rejected (not a DICOM file)\n");
-				else if (!filterResult) resultsPane.print(Color.red,"File rejected (filter)\n");
-				else resultsPane.print(Color.red,"File rejected (unknown reason)\n");
+			catch (Exception ex) {
+				StringWriter sw = new StringWriter();
+				ex.printStackTrace(new PrintWriter(sw));
+				resultsPane.print(Color.red,"\n"+sw.toString()+"\n");
 			}
-			return;
 		}
 		else {
-			File[] files = file.listFiles(filter);
-			for (File f : files) {
-				if (f.isFile() || subdirectories) anonymize(f);
+			try {
+				File[] files = file.listFiles(filter);
+				for (File f : files) {
+					if (f.isFile() || subdirectories) anonymize(f);
+				}
+			}
+			catch (Exception ex) {
+				resultsPane.print(Color.red, file+" appears to be a corrupt directory\n");
 			}
 		}
 	}
@@ -270,6 +282,9 @@ public class RightPanel extends JPanel
 		}
 		public void print(Color c, String s) {
 			text.print(c, margin + s);
+		}
+		public void println(Color c, String s) {
+			text.print(c, margin + s + "\n");
 		}
 	}
 

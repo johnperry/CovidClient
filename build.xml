@@ -153,6 +153,9 @@ libraries/imageio/twelvemonkeys-imageio-metadata-3.6-SNAPSHOT.jar
 		<copy overwrite="true" todir="/Casa/Website/ROOT/wings/misc">
 			<fileset dir="${products}" includes="CovidClient-installer.jar"/>
 		</copy>
+		<copy overwrite="true" todir="/JavaPrograms/CTP-COVID/CTP/ROOT">
+			<fileset dir="${products}" includes="CovidClient-installer.jar"/>
+		</copy>
 	</target>
 
 	<target name="all" depends="clean, build, release"/>

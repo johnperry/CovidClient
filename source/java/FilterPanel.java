@@ -15,7 +15,8 @@ public class FilterPanel extends BasePanel implements ActionListener {
 	JButton reset;
 	JButton save;
 	File file = new File("filter.script");
-	JCheckBox filterSRs;
+	JCheckBox filterSRs; //structured reports
+	JCheckBox filterSCs; //secondary capture
 	Configuration config;
 
 	static FilterPanel filterPanel = null;
@@ -42,11 +43,16 @@ public class FilterPanel extends BasePanel implements ActionListener {
 		jsp.getViewport().setBackground(Color.white);
 		add(jsp, BorderLayout.CENTER);
 
-		filterSRs = new JCheckBox("Remove SR Objects");
+		filterSRs = new JCheckBox("Remove Structured Report Files");
 		String sel = config.getProps().getProperty("filterSRs", "yes");
 		filterSRs.setSelected(!sel.equals("no"));
 		filterSRs.setBackground(config.background);
 		filterSRs.addActionListener(this);
+		filterSCs = new JCheckBox("Remove Secondary Capture Files");
+		sel = config.getProps().getProperty("filterSCs", "yes");
+		filterSCs.setSelected(!sel.equals("no"));
+		filterSCs.setBackground(config.background);
+		filterSCs.addActionListener(this);
 		reset = new JButton("Reset");
 		reset.addActionListener(this);
 		save = new JButton("Save");
@@ -54,6 +60,8 @@ public class FilterPanel extends BasePanel implements ActionListener {
 
 		Box footer = Box.createHorizontalBox();
 		footer.add(filterSRs);
+		footer.add(Box.createHorizontalStrut(20));
+		footer.add(filterSCs);
 		footer.add(Box.createHorizontalGlue());
 		footer.add(reset);
 		footer.add(Box.createHorizontalStrut(3));
@@ -83,6 +91,10 @@ public class FilterPanel extends BasePanel implements ActionListener {
 		return filterSRs.isSelected();
 	}
 
+	public boolean getFilterSCs() {
+		return filterSCs.isSelected();
+	}
+
 	public void actionPerformed(ActionEvent event) {
 		Object source = event.getSource();
 		if (source.equals(reset)) reload();
@@ -91,6 +103,9 @@ public class FilterPanel extends BasePanel implements ActionListener {
 		}
 		else if (source.equals(filterSRs)) {
 			config.getProps().setProperty("filterSRs", (filterSRs.isSelected() ? "yes" : "no"));
+		}
+		else if (source.equals(filterSCs)) {
+			config.getProps().setProperty("filterSCs", (filterSCs.isSelected() ? "yes" : "no"));
 		}
 	}
 

@@ -49,7 +49,8 @@ public class Configuration {
 			integerTable = new IntegerTable(databaseDir);
 			storageDir = home;
 			String storageDirProp = props.getProperty("storageDir", "Storage");
-			if (storageDirProp != null) storageDir = new File(storageDirProp);
+			storageDir = new File(storageDirProp);
+			storageDir.mkdirs();
 			props.setProperty("storageDir", storageDir.getAbsolutePath());
 			String ext = props.getProperty("extensions", ".dcm,[dcm]");
 			props.setProperty("extensions", ext);

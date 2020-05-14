@@ -486,7 +486,7 @@ public class MetadataPanel extends JPanel implements ActionListener {
 		public void saveMetadataXML(File dir) {
 			try {
 				Document doc = XmlUtil.getDocument();
-				Element root = doc.createElement(dir.getName());
+				Element root = doc.createElement("Metadata");
 				doc.appendChild(root);
 				
 				Element parent = root;
@@ -668,7 +668,7 @@ public class MetadataPanel extends JPanel implements ActionListener {
 		ButtonGroup group;
 		public RadioPanel(String[] options) {
 			super();
-			setLayout(new FlowLayout(FlowLayout.LEADING, 5, 0));
+			setLayout(new RowLayout());
 			setBackground(background);
 			this.options = options;
 			group = new ButtonGroup();
@@ -679,10 +679,8 @@ public class MetadataPanel extends JPanel implements ActionListener {
 				this.add(b);
 				group.add(b);
 			}
+			this.add(RowLayout.crlf());
 			if (b != null) b.setSelected(true);
-			Dimension d = getPreferredSize();
-			d.width = 250;
-			setPreferredSize(d);
 		}
 		public String getText() {
 			Enumeration<AbstractButton> e = group.getElements();

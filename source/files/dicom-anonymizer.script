@@ -304,8 +304,8 @@
  <e en="F" t="00089458" n="FrameDisplaySeq"></e>
  <e en="F" t="00089459" n="RecommendedDisplayFrameRateInFloat"></e>
  <e en="F" t="00089460" n="SkipFrameRangeFlag"></e>
- <e en="T" t="00100010" n="PatientName">@param(@SITEID)-@integer(PatientID,"ptid",6)</e>
- <e en="T" t="00100020" n="PatientID">@param(@SITEID)-@integer(PatientID,"ptid",6)</e>
+ <e en="T" t="00100010" n="PatientName">@param(@SITEID)-@integer(PatientID,"ptid",4)</e>
+ <e en="T" t="00100020" n="PatientID">@param(@SITEID)-@integer(PatientID,"ptid",4)</e>
  <e en="T" t="00100021" n="IssuerOfPatientID">@remove()</e>
  <e en="F" t="00100022" n="TypeOfPatientID"></e>
  <e en="F" t="00100024" n="IssuerOfPatientIDQualifiersSeq"></e>
