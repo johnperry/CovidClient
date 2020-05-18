@@ -104,6 +104,7 @@ public class MetadataPanel extends JPanel implements ActionListener {
 				patientSex = dob.getElementValue("PatientSex");
 				patientAge = dob.getElementValue("PatientAge");
 			}
+			patientAge = fixPatientAge(patientAge);
 
 			String pn = patient.getName();
 			PatientIndexEntry ie = Index.getInstance().getInvEntry(pn);
@@ -291,6 +292,14 @@ public class MetadataPanel extends JPanel implements ActionListener {
 		centerPanel.addRadioPanelRow(list, "Remdesivir", yesNoUnspecified, 3);
 		centerPanel.addRadioPanelRow(list, "IVImmunoglobulin", yesNoUnspecified, 3);
 		centerPanel.addButtonRow(list, "Add New Treatment Block");
+	}
+	
+	private String fixPatientAge(String ageString) {
+		ageString = ageString.replaceAll("[^0-9]","");
+		int age = 0;
+		try { age = Integer.parseInt(ageString); }
+		catch (Exception oops) { }
+		return Integer.toString(age);
 	}
 	
 	private String getPath(File base, File dir) {
