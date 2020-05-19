@@ -42,6 +42,7 @@ public class CovidClient extends JFrame implements ChangeListener {
     private IndexPanel				indexPanel;
     private HtmlJPanel 				helpPanel;
     private LogPanel				logPanel;
+    private AdminPanel				adminPanel;
 
 	static Logger logger;
 
@@ -135,20 +136,24 @@ public class CovidClient extends JFrame implements ChangeListener {
 		exportPanel = ExportPanel.getInstance();
 		indexPanel = new IndexPanel();
 		helpPanel = new HtmlJPanel( FileUtil.getText( new File(config.helpfile) ) );
+		adminPanel = new AdminPanel();
+		
+		adminPanel.addTabs(
+			viewerPanel,
+			editorPanel,
+			filterPanel,
+			anonymizerPanel,
+			indexPanel,
+			logPanel);
 		
 		mainPanel.addTabs(
 			welcomePanel,
 			scuPanel,
 			scpPanel,
 			splitPanel,
-			viewerPanel,
-			editorPanel,
-			filterPanel,
-			anonymizerPanel,
 			metadataPanel,
 			exportPanel,
-			indexPanel,
-			logPanel,
+			adminPanel,
 			helpPanel);
 		
 		mainPanel.tabbedPane.addChangeListener(this);
@@ -182,30 +187,46 @@ public class CovidClient extends JFrame implements ChangeListener {
 						 SCUPanel scu,
 						 SCPPanel scp,
 						 JPanel source,
-						 Viewer viewer,
-						 Editor editor,
-						 FilterPanel filter,
-						 AnonymizerPanel script,
 						 MetadataPanel metadata,
 						 ExportPanel export,
-						 IndexPanel index,
-						 LogPanel logPanel,
+						 AdminPanel admin,
 						 JPanel help) {
 			tabbedPane.addTab("Welcome", wp);
 			tabbedPane.addTab("Q/R SCU", scu);
 			tabbedPane.addTab("Storage SCP", scp);
 			tabbedPane.addTab("Directory", source);
+			tabbedPane.addTab("Metadata", metadata);
+			tabbedPane.addTab("Export", export);
+			tabbedPane.addTab("Admin", admin);
+			tabbedPane.addTab("Help", help);
+			tabbedPane.setSelectedIndex(0);
+		}
+	}
+	
+	class AdminPanel extends JPanel {
+		public JTabbedPane tabbedPane;
+		public AdminPanel() {
+			super();
+			this.setLayout(new BorderLayout());
+			setBackground(Configuration.getInstance().background);
+			tabbedPane = new JTabbedPane();
+			this.add(tabbedPane,BorderLayout.CENTER);
+		}
+		public void addTabs(
+						 Viewer viewer,
+						 Editor editor,
+						 FilterPanel filter,
+						 AnonymizerPanel script,
+						 IndexPanel index,
+						 LogPanel logPanel) {
 			tabbedPane.addTab("Viewer", viewer);
 			tabbedPane.addTab("Elements", editor);
 			tabbedPane.addTab("Filter", filter);
 			tabbedPane.addTab("Script", script);
-			tabbedPane.addTab("Metadata", metadata);
-			tabbedPane.addTab("Export", export);
 			tabbedPane.addTab("Index", index);
 			tabbedPane.addTab("Log", logPanel);
-			tabbedPane.addTab("Help", help);
-			tabbedPane.setSelectedIndex(0);
 			tabbedPane.addChangeListener(viewer);
+			tabbedPane.setSelectedIndex(4);
 		}
 	}
 
