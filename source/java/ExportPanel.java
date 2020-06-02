@@ -29,6 +29,7 @@ public class ExportPanel extends BasePanel implements ActionListener, KeyListene
 	JButton export;
 	JButton refresh;
 	JButton clear;
+	JButton select;
 	PanelField repositoryIP;
 	PanelField repositoryPort;
 	JCheckBox enableExport;
@@ -59,6 +60,8 @@ public class ExportPanel extends BasePanel implements ActionListener, KeyListene
 		refresh.addActionListener(this);
 		clear = new JButton("Clear All");
 		clear.addActionListener(this);
+		select = new JButton("Select All");
+		select.addActionListener(this);
 		
 		String ipString = config.getProps().getProperty("repositoryIP","");
 		repositoryIP = new PanelField(ipString, 250);
@@ -117,6 +120,8 @@ public class ExportPanel extends BasePanel implements ActionListener, KeyListene
 		footer.setBackground(config.background);
 		footer.add(clear);
 		footer.add(Box.createHorizontalStrut(10));
+		footer.add(select);
+		footer.add(Box.createHorizontalStrut(10));
 		footer.add(refresh);
 		footer.add(Box.createHorizontalGlue());
 		footer.add(export);
@@ -131,8 +136,8 @@ public class ExportPanel extends BasePanel implements ActionListener, KeyListene
 		//Put in the column headings
 		centerPanel.add(Box.createHorizontalStrut(5)); //no heading for the checkboxes
 		centerPanel.add(new HeadingLabel("PatientID"));
-		centerPanel.add(new HeadingLabel("Metadata"));
-		centerPanel.add(new HeadingLabel("Export"));
+		centerPanel.add(new HeadingLabel("MetadataDate"));
+		centerPanel.add(new HeadingLabel("ExportDate"));
 		centerPanel.add(RowLayout.crlf());
 		//Put in the cases
 		File[] cases = config.getStorageDir().listFiles();
@@ -177,6 +182,17 @@ public class ExportPanel extends BasePanel implements ActionListener, KeyListene
 			for (Component c : comps) {
 				if (c instanceof CaseCheckBox) {
 					((CaseCheckBox)c).setSelected(false);
+				}
+			}
+		}
+		else if (source.equals(select)) {
+			Component[] comps = centerPanel.getComponents();
+			for (Component c : comps) {
+				if (c instanceof CaseCheckBox) {
+					CaseCheckBox ccb = (CaseCheckBox)c;
+					File exportFile = new File(ccb.file, hiddenExportFilename);
+					File metadataFile = new File(ccb.file, "metadata.xml");
+					ccb.setSelected(metadataFile.exists() && !exportFile.exists());
 				}
 			}
 		}
@@ -291,7 +307,7 @@ public class ExportPanel extends BasePanel implements ActionListener, KeyListene
 				}
 			}
 			else logger.warn("Unable to create zip file for export ("+zip+")");
-			//zip.delete(); //commented out for testing
+			zip.delete();
 		}
 		private File createManifest(File dir) {
 			String uid = Long.toString(System.currentTimeMillis());

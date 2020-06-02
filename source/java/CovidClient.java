@@ -23,9 +23,9 @@ import org.w3c.dom.Node;
 /**
  * The Anonymizer program base class.
  */
-public class CovidClient extends JFrame implements ChangeListener {
+public class CovidClient extends JFrame {
 
-    private String					windowTitle = "CovidClient - version 2";
+    private String					windowTitle = "CovidClient - version 3";
     private MainPanel				mainPanel;
     private JPanel					splitPanel;
     private WelcomePanel			welcomePanel;
@@ -156,7 +156,6 @@ public class CovidClient extends JFrame implements ChangeListener {
 			adminPanel,
 			helpPanel);
 		
-		mainPanel.tabbedPane.addChangeListener(this);
 		sourcePanel.addFileListener(viewerPanel);
 		sourcePanel.addFileListener(editorPanel);
 		pack();
@@ -165,15 +164,7 @@ public class CovidClient extends JFrame implements ChangeListener {
 		System.out.println("Initialization complete");
     }
     
-	public void stateChanged(ChangeEvent event) {
-		Component comp = mainPanel.tabbedPane.getSelectedComponent();
-		if (comp.equals(indexPanel)) indexPanel.setFocus();
-		else if (comp.equals(filterPanel)) filterPanel.setFocus();
-		else if (comp.equals(logPanel)) logPanel.reload();
-		else if (comp.equals(scuPanel)) scuPanel.setFocus();
-	}
-	
-	class MainPanel extends JPanel {
+	class MainPanel extends JPanel implements ChangeListener {
 		public JTabbedPane tabbedPane;
 		public MainPanel() {
 			super();
@@ -199,11 +190,16 @@ public class CovidClient extends JFrame implements ChangeListener {
 			tabbedPane.addTab("Export", export);
 			tabbedPane.addTab("Admin", admin);
 			tabbedPane.addTab("Help", help);
+			tabbedPane.addChangeListener(this);
 			tabbedPane.setSelectedIndex(0);
+		}
+		public void stateChanged(ChangeEvent event) {
+			Component comp = tabbedPane.getSelectedComponent();
+			if (comp.equals(scuPanel)) scuPanel.setFocus();
 		}
 	}
 	
-	class AdminPanel extends JPanel {
+	class AdminPanel extends JPanel implements ChangeListener {
 		public JTabbedPane tabbedPane;
 		public AdminPanel() {
 			super();
@@ -226,7 +222,14 @@ public class CovidClient extends JFrame implements ChangeListener {
 			tabbedPane.addTab("Index", index);
 			tabbedPane.addTab("Log", logPanel);
 			tabbedPane.addChangeListener(viewer);
+			tabbedPane.addChangeListener(this);
 			tabbedPane.setSelectedIndex(4);
+		}
+		public void stateChanged(ChangeEvent event) {
+			Component comp = tabbedPane.getSelectedComponent();
+			if (comp.equals(indexPanel)) indexPanel.setFocus();
+			else if (comp.equals(filterPanel)) filterPanel.setFocus();
+			else if (comp.equals(logPanel)) logPanel.reload();
 		}
 	}
 
