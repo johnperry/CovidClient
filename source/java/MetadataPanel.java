@@ -8,6 +8,7 @@ import java.io.*;
 import java.util.*;
 import org.rsna.ctp.objects.DicomObject;
 import org.rsna.util.FileUtil;
+import org.rsna.util.StringUtil;
 import org.rsna.util.XmlUtil;
 import org.rsna.ui.RowLayout;
 import org.w3c.dom.Document;
@@ -19,17 +20,24 @@ import org.w3c.dom.Element;
  */
 public class MetadataPanel extends JPanel implements ActionListener {
 
+	private Configuration config;
 	private HeaderPanel headerPanel;
+	private SelectionPanel selectionPanel;
 	private CenterPanel centerPanel;
 	private FooterPanel footerPanel;
+	private JScrollPane centerScrollPane;
 	Color background;
 	File currentSelection = null;
 	JFileChooser chooser;
 	DirectoryFilter dirsOnly = new DirectoryFilter();
+	static final String hiddenExportFilename = "..export";
+	static final String metadataFilename = "metadata.xml";
 	
 	Font sectionFont = new Font( "SansSerif", Font.BOLD, 16 );
 	Font itemFont = new Font( "SansSerif", Font.PLAIN, 16 );
 	Font mono = new Font( "Monospaced", Font.BOLD, 16 );
+	Font columnHeadingFont = new java.awt.Font( "SansSerif", java.awt.Font.BOLD, 14 );
+	Font rowFont = new java.awt.Font( "Monospaced", java.awt.Font.BOLD, 12 );
 	
 	String[] yesNo = {"", "Yes", "No"};
 	String[] yesNoUnspecified = {"Yes", "No", "???"};
@@ -40,21 +48,22 @@ public class MetadataPanel extends JPanel implements ActionListener {
 	 */
     public MetadataPanel() {
 		super();
-		Configuration config = Configuration.getInstance();
+		config = Configuration.getInstance();
 		setLayout(new BorderLayout());
 		background = config.background;
 		setBackground(background);
+		selectionPanel = new SelectionPanel(this);
 		centerPanel = new CenterPanel();
 		footerPanel = new FooterPanel();
 		footerPanel.select.addActionListener(this);
 		footerPanel.save.addActionListener(this);
 		headerPanel = new HeaderPanel();
 		add(headerPanel, BorderLayout.NORTH);
-		JScrollPane sp = new JScrollPane();
-		sp.setViewportView(centerPanel);
-		sp.getVerticalScrollBar().setBlockIncrement(50);
-		sp.getVerticalScrollBar().setUnitIncrement(15);
-		add(sp, BorderLayout.CENTER);
+		centerScrollPane = new JScrollPane();
+		centerScrollPane.setViewportView(selectionPanel);
+		centerScrollPane.getVerticalScrollBar().setBlockIncrement(50);
+		centerScrollPane.getVerticalScrollBar().setUnitIncrement(15);
+		add(centerScrollPane, BorderLayout.CENTER);
 		add(footerPanel, BorderLayout.SOUTH);
 	}
 	
@@ -65,12 +74,20 @@ public class MetadataPanel extends JPanel implements ActionListener {
     public void actionPerformed(ActionEvent event) {
 		Object source = event.getSource();
 		if (source.equals(footerPanel.select)) {
-			File selection = getSelection();
-			if (selection != null) {
-				currentSelection = selection;
-				headerPanel.panelTitle.setText("Create Submission Metadata for "+currentSelection.getName());
-				processSelection();
-			}
+			selectionPanel = new SelectionPanel(this);
+			centerScrollPane.setViewportView(selectionPanel); 
+			headerPanel.panelTitle.setText("Create Submission Metadata");
+			footerPanel.save.setEnabled(false);
+		}
+		else if (source instanceof CaseLabel) {
+			CaseLabel cl = (CaseLabel)source;
+			File storageDir = Configuration.getInstance().getStorageDir();
+			File caseDir = new File(storageDir, cl.getText());
+			currentSelection = caseDir;
+			centerScrollPane.setViewportView(centerPanel); 
+			headerPanel.panelTitle.setText("Create Submission Metadata for "+currentSelection.getName());
+			processSelection();
+			footerPanel.save.setEnabled(true);
 		}
 		else if (source.equals(footerPanel.save) && (currentSelection != null)) {
 			centerPanel.saveMetadataXML(currentSelection);
@@ -315,7 +332,7 @@ public class MetadataPanel extends JPanel implements ActionListener {
 		}
 	}		
 		
-	class HeaderPanel extends Panel {
+	class HeaderPanel extends JPanel {
 		public JLabel panelTitle;
 		public HeaderPanel() {
 			super();
@@ -329,6 +346,89 @@ public class MetadataPanel extends JPanel implements ActionListener {
 			box.add(Box.createVerticalStrut(10));
 			this.add(box);
 		}		
+	}
+	
+	class SelectionPanel extends JPanel implements MouseListener {
+		ActionListener listener;
+		public SelectionPanel(ActionListener listener) {
+			super();
+			setLayout(new FlowLayout(FlowLayout.CENTER));
+			setBackground(config.background);
+			this.listener = listener;
+			JPanel sp = new JPanel(new FlowLayout(FlowLayout.CENTER));
+			sp.setLayout(new RowLayout(20, 5));
+			sp.setBackground(config.background);
+			listCases(sp);
+			add(sp);
+		}
+		private void listCases(JPanel sp) {
+			sp.removeAll();
+			//Put in a vertical margin
+			sp.add(Box.createVerticalStrut(10));
+			sp.add(RowLayout.crlf());
+			//Put in the column headings
+			sp.add(new HeadingLabel("PatientID"));
+			sp.add(new HeadingLabel("MetadataDate"));
+			sp.add(new HeadingLabel("ExportDate"));
+			sp.add(RowLayout.crlf());
+			//Put in the cases
+			File[] cases = config.getStorageDir().listFiles();
+			for (int i=cases.length-1; i>=0; i--) {
+				File caseDir = cases[i];
+				if (caseDir.isDirectory()) {
+					String metadataDate = "";
+					File metadataFile = new File(caseDir, metadataFilename);
+					if (metadataFile.exists()) {
+						metadataDate = StringUtil.getDate(metadataFile.lastModified(), ".");
+					}
+					String exportDate = "";
+					File exportFile = new File(caseDir, hiddenExportFilename);
+					if (exportFile.exists()) {
+						exportDate = StringUtil.getDate(exportFile.lastModified(), ".");
+					}
+					CaseLabel clmd = new CaseLabel(metadataDate);
+					CaseLabel clex = new CaseLabel(exportDate);
+					CaseLabel clname = new CaseLabel(caseDir.getName());
+					clname.addMouseListener(this);
+					sp.add(clname);
+					sp.add(clmd);
+					sp.add(clex);
+ 					sp.add(RowLayout.crlf());
+				}
+			}
+		}
+		public void mouseClicked(MouseEvent e) {
+			listener.actionPerformed(
+				new ActionEvent(e.getSource(), ActionEvent.ACTION_PERFORMED, "") );
+		}
+		public void mouseEntered(MouseEvent e) { }
+		public void mouseExited(MouseEvent e) { }
+		public void mousePressed(MouseEvent e) { }
+		public void mouseReleased(MouseEvent e) { }
+		
+	}
+	
+	class HeadingLabel extends JLabel {
+		public HeadingLabel(String text) {
+			this(text, 0.0f);
+		}
+		public HeadingLabel(String text, float alignmentX) {
+			super(text);
+			setFont(columnHeadingFont);
+			setForeground(Color.BLUE);
+			setAlignmentX(alignmentX);
+		}
+	}
+	
+	class CaseLabel extends JLabel {
+		public CaseLabel(String text) {
+			this(text, 0.0f);
+		}
+		public CaseLabel(String text, float alignmentX) {
+			super(text);
+			setFont( rowFont );
+			setAlignmentX(alignmentX);
+		}
 	}
 	
 	class CenterPanel extends JPanel implements ActionListener {
@@ -582,6 +682,7 @@ public class MetadataPanel extends JPanel implements ActionListener {
 			add(select);
 			add(Box.createHorizontalStrut(15));
 			add(save);
+			save.setEnabled(false);
 		}
 	}
 	

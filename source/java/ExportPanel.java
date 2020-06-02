@@ -43,7 +43,8 @@ public class ExportPanel extends BasePanel implements ActionListener, KeyListene
 	
 	ExecutorService exportExecutor = Executors.newSingleThreadExecutor();
 	static final String hiddenExportFilename = "..export";
-
+	static final String metadataFilename = "metadata.xml";
+	
 	public static synchronized ExportPanel getInstance() {
 		if (exportPanel == null) exportPanel = new ExportPanel();
 		return exportPanel;
@@ -144,7 +145,7 @@ public class ExportPanel extends BasePanel implements ActionListener, KeyListene
 		for (File caseDir : cases) {
 			if (caseDir.isDirectory()) {
 				String metadataDate = "";
-				File metadata = new File(caseDir, "metadata.xml");
+				File metadata = new File(caseDir, metadataFilename);
 				if (metadata.exists()) {
 					metadataDate = StringUtil.getDate(metadata.lastModified(), ".");
 				}
@@ -191,7 +192,7 @@ public class ExportPanel extends BasePanel implements ActionListener, KeyListene
 				if (c instanceof CaseCheckBox) {
 					CaseCheckBox ccb = (CaseCheckBox)c;
 					File exportFile = new File(ccb.file, hiddenExportFilename);
-					File metadataFile = new File(ccb.file, "metadata.xml");
+					File metadataFile = new File(ccb.file, metadataFilename);
 					ccb.setSelected(metadataFile.exists() && !exportFile.exists());
 				}
 			}
