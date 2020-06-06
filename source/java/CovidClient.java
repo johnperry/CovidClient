@@ -25,8 +25,7 @@ import org.w3c.dom.Node;
  */
 public class CovidClient extends JFrame {
 
-    private String					windowTitle = "CovidClient - version 3";
-    private MainPanel				mainPanel;
+    private String					windowTitle = "CovidClient - version 4";
     private JPanel					splitPanel;
     private WelcomePanel			welcomePanel;
     private SCUPanel				scuPanel;
@@ -42,6 +41,8 @@ public class CovidClient extends JFrame {
     private IndexPanel				indexPanel;
     private HtmlJPanel 				helpPanel;
     private LogPanel				logPanel;
+    private MainPanel				mainPanel;
+    private ImportPanel				importPanel;
     private AdminPanel				adminPanel;
 
 	static Logger logger;
@@ -136,8 +137,14 @@ public class CovidClient extends JFrame {
 		exportPanel = ExportPanel.getInstance();
 		indexPanel = new IndexPanel();
 		helpPanel = new HtmlJPanel( FileUtil.getText( new File(config.helpfile) ) );
-		adminPanel = new AdminPanel();
 		
+		importPanel = new ImportPanel();
+		importPanel.addTabs(
+			scuPanel,
+			scpPanel,
+			splitPanel);
+		
+		adminPanel = new AdminPanel();
 		adminPanel.addTabs(
 			viewerPanel,
 			editorPanel,
@@ -148,9 +155,7 @@ public class CovidClient extends JFrame {
 		
 		mainPanel.addTabs(
 			welcomePanel,
-			scuPanel,
-			scpPanel,
-			splitPanel,
+			importPanel,
 			metadataPanel,
 			exportPanel,
 			adminPanel,
@@ -175,21 +180,42 @@ public class CovidClient extends JFrame {
 		}
 		public void addTabs(
 						 WelcomePanel wp,
-						 SCUPanel scu,
-						 SCPPanel scp,
-						 JPanel source,
+						 ImportPanel imp,
 						 MetadataPanel metadata,
 						 ExportPanel export,
 						 AdminPanel admin,
-						 JPanel help) {
+						 HtmlJPanel help) {
 			tabbedPane.addTab("Welcome", wp);
+			tabbedPane.addTab("<html><center>DICOM<br>Deidentification</center></html>", imp);
+			tabbedPane.addTab("<html><center>Metadata<br>Entry</center></html>", metadata);
+			tabbedPane.addTab("<html><center>Submission<br>Upload</center></html>", export);
+			tabbedPane.addTab("Administration", admin);
+			tabbedPane.addTab("Help", help);
+			tabbedPane.addChangeListener(this);
+			tabbedPane.setSelectedIndex(0);
+		}
+		public void stateChanged(ChangeEvent event) {
+			Component comp = tabbedPane.getSelectedComponent();
+			if (comp.equals(scuPanel)) scuPanel.setFocus();
+		}
+	}
+	
+	class ImportPanel extends JPanel implements ChangeListener {
+		public JTabbedPane tabbedPane;
+		public ImportPanel() {
+			super();
+			this.setLayout(new BorderLayout());
+			setBackground(Configuration.getInstance().background);
+			tabbedPane = new JTabbedPane();
+			this.add(tabbedPane,BorderLayout.CENTER);
+		}
+		public void addTabs(
+						 SCUPanel scu,
+						 SCPPanel scp,
+						 JPanel source) {
+			tabbedPane.addTab("Directory", source);
 			tabbedPane.addTab("Q/R SCU", scu);
 			tabbedPane.addTab("Storage SCP", scp);
-			tabbedPane.addTab("Directory", source);
-			tabbedPane.addTab("Metadata", metadata);
-			tabbedPane.addTab("Export", export);
-			tabbedPane.addTab("Admin", admin);
-			tabbedPane.addTab("Help", help);
 			tabbedPane.addChangeListener(this);
 			tabbedPane.setSelectedIndex(0);
 		}
@@ -293,22 +319,4 @@ public class CovidClient extends JFrame {
 		return false;
 	}
 	
-	private void checkImageIOTools() {
-		String javaHome = System.getProperty("java.home");
-		File extDir = new File(javaHome);
-		extDir = new File(extDir, "lib");
-		extDir = new File(extDir, "ext");
-		File clib = FileUtil.getFile(extDir, "clibwrapper_jiio", ".jar");
-		File jai = FileUtil.getFile(extDir, "jai_imageio", ".jar");
-		boolean imageIOTools = (clib != null) && (jai != null);
-		if (!imageIOTools) {
-			JOptionPane.showMessageDialog(this, 
-				"The ImageIOTools are not installed on this machine.\n" +
-				"When you close this dialog, your browser will launch\n" +
-				"and take you to a site where you can obtain them.");
-			BrowserUtil.openURL(
-				"http://mircwiki.rsna.org/index.php?title=Java_Advanced_Imaging_ImageIO_Tools");
-		}			
-	}
-
 }

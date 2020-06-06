@@ -55,7 +55,7 @@ public class ExportPanel extends BasePanel implements ActionListener, KeyListene
 		config = Configuration.getInstance();
 	
 		//UI Components
-		export = new JButton("Export");
+		export = new JButton("Upload");
 		export.addActionListener(this);
 		refresh = new JButton("Refresh");
 		refresh.addActionListener(this);
@@ -74,6 +74,7 @@ public class ExportPanel extends BasePanel implements ActionListener, KeyListene
 		enableExport.setBackground(config.background);
 		enableExport.addActionListener(this);
 		enableExport.setSelected(config.getProps().getProperty("enableExport", "yes").equals("yes"));
+		enableExport.setVisible(false);
 		
 		//Header
 		Box header = Box.createHorizontalBox();
@@ -94,7 +95,7 @@ public class ExportPanel extends BasePanel implements ActionListener, KeyListene
 		//Put in the title
 		JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 10));
 		titlePanel.setBackground(config.background);
-		JLabel panelTitle = new JLabel("Export Metadata and Studies");
+		JLabel panelTitle = new JLabel("Upload Metadata and Studies");
 		panelTitle.setFont(titleFont);
 		panelTitle.setForeground(Color.BLUE);
 		titlePanel.add(panelTitle);
@@ -384,6 +385,7 @@ public class ExportPanel extends BasePanel implements ActionListener, KeyListene
 								if (expFile.exists()) {
 									String exportDate = StringUtil.getDate(expFile.lastModified(), ".");
 									cb.label.setText(exportDate);
+									cb.setSelected(false);
 									return;
 								}
 							}

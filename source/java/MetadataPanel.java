@@ -55,6 +55,7 @@ public class MetadataPanel extends JPanel implements ActionListener {
 		selectionPanel = new SelectionPanel(this);
 		centerPanel = new CenterPanel();
 		footerPanel = new FooterPanel();
+		footerPanel.refresh.addActionListener(this);
 		footerPanel.select.addActionListener(this);
 		footerPanel.save.addActionListener(this);
 		headerPanel = new HeaderPanel();
@@ -76,8 +77,10 @@ public class MetadataPanel extends JPanel implements ActionListener {
 		if (source.equals(footerPanel.select)) {
 			selectionPanel = new SelectionPanel(this);
 			centerScrollPane.setViewportView(selectionPanel); 
+			centerScrollPane.getVerticalScrollBar().setValue(0);
 			headerPanel.panelTitle.setText("Create Submission Metadata");
 			footerPanel.save.setEnabled(false);
+			footerPanel.refresh.setEnabled(true);
 		}
 		else if (source instanceof CaseLabel) {
 			CaseLabel cl = (CaseLabel)source;
@@ -85,9 +88,16 @@ public class MetadataPanel extends JPanel implements ActionListener {
 			File caseDir = new File(storageDir, cl.getText());
 			currentSelection = caseDir;
 			centerScrollPane.setViewportView(centerPanel); 
+			centerScrollPane.getVerticalScrollBar().setValue(0);
 			headerPanel.panelTitle.setText("Create Submission Metadata for "+currentSelection.getName());
 			processSelection();
 			footerPanel.save.setEnabled(true);
+			footerPanel.refresh.setEnabled(false);
+		}
+		else if (source.equals(footerPanel.refresh)) {
+			selectionPanel.refresh();
+			selectionPanel.revalidate();
+			selectionPanel.repaint();
 		}
 		else if (source.equals(footerPanel.save) && (currentSelection != null)) {
 			centerPanel.saveMetadataXML(currentSelection);
@@ -350,18 +360,19 @@ public class MetadataPanel extends JPanel implements ActionListener {
 	
 	class SelectionPanel extends JPanel implements MouseListener {
 		ActionListener listener;
+		JPanel sp;
 		public SelectionPanel(ActionListener listener) {
 			super();
 			setLayout(new FlowLayout(FlowLayout.CENTER));
 			setBackground(config.background);
 			this.listener = listener;
-			JPanel sp = new JPanel(new FlowLayout(FlowLayout.CENTER));
+			sp = new JPanel(new FlowLayout(FlowLayout.CENTER));
 			sp.setLayout(new RowLayout(20, 5));
 			sp.setBackground(config.background);
-			listCases(sp);
+			refresh();
 			add(sp);
 		}
-		private void listCases(JPanel sp) {
+		public void refresh() {
 			sp.removeAll();
 			//Put in a vertical margin
 			sp.add(Box.createVerticalStrut(10));
@@ -670,6 +681,7 @@ public class MetadataPanel extends JPanel implements ActionListener {
 	}
 
 	class FooterPanel extends JPanel {
+		public JButton refresh;
 		public JButton select;
 		public JButton save;
 		public FooterPanel() {
@@ -677,8 +689,11 @@ public class MetadataPanel extends JPanel implements ActionListener {
 			setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
 			setLayout(new FlowLayout());
 			setBackground(background);
+			refresh = new JButton("Refresh");
 			select = new JButton("Select Patient");
 			save = new JButton("Save Metadata");
+			add(refresh);
+			add(Box.createHorizontalStrut(15));
 			add(select);
 			add(Box.createHorizontalStrut(15));
 			add(save);

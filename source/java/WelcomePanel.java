@@ -182,5 +182,5 @@ public class WelcomePanel extends BasePanel {
 		"to prepare them for submission. It may be used to ensure privacy by removing protected " +
 		"health information from your DICOM imaging studies." +
 		"\n\n" +
-		"You can learn more about the QIC initiative here.";
+		"You can learn more about the QIC initiative and register your institution to contribute cases here.";
 }
