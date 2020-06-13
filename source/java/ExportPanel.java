@@ -64,10 +64,10 @@ public class ExportPanel extends BasePanel implements ActionListener, KeyListene
 		select = new JButton("Select All");
 		select.addActionListener(this);
 		
-		String ipString = config.getProps().getProperty("repositoryIP","");
+		String ipString = config.getProps().getProperty("repositoryIP","https://upload.open-qic.org");
 		repositoryIP = new PanelField(ipString, 250);
 		repositoryIP.addKeyListener(this);
-		String portString = config.getProps().getProperty("repositoryPort", "8080");
+		String portString = config.getProps().getProperty("repositoryPort", "8101");
 		repositoryPort = new PanelField(portString);
 		repositoryPort.addKeyListener(this);
 		enableExport = new JCheckBox("Enable export");

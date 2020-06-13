@@ -58,7 +58,7 @@ public class WelcomePanel extends BasePanel {
 		
 		message.add(Box.createVerticalStrut(15));
 		message.add(RowLayout.crlf());
-		message.add(new LogoPanel());
+		//message.add(new LogoPanel());
 		message.add(RowLayout.crlf());
 		message.add(RowLayout.crlf());
 		message.add(new TitleLabel("Welcome", 0.5f));
