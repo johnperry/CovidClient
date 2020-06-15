@@ -37,11 +37,12 @@ public class AnonymizerPanel extends JPanel implements ActionListener {
 	File scriptFile;
 	Color background;
 	boolean showAll = true;
+	boolean locked = false;
 
 	/**
 	 * Class constructor.
 	 */
-    public AnonymizerPanel() {
+	public AnonymizerPanel() {
 		super();
 		Configuration config = Configuration.getInstance();
 		setLayout(new BorderLayout());
@@ -61,7 +62,18 @@ public class AnonymizerPanel extends JPanel implements ActionListener {
 		footerPanel.reset.addActionListener(this);
 		this.add(footerPanel,BorderLayout.SOUTH);
 		this.add(configSP,BorderLayout.CENTER);
-   }
+		
+		setLocked(config.getProps().getProperty("script","locked").equals("locked"));
+	}
+
+	/**
+	 * Set the locked flag to enable/disable saving the script.
+	 * @param locked whether to lock the script.
+	 */
+    public void setLocked(boolean locked) {
+		this.locked = locked;
+		footerPanel.save.setEnabled(!locked);
+	}
 
 	/**
 	 * Implementation of the ActionListener for the Save Changes button.
@@ -128,6 +140,10 @@ public class AnonymizerPanel extends JPanel implements ActionListener {
 			}
 		}
 		public void save() {
+			if (locked) {
+				JOptionPane.showMessageDialog(this.getParent(), "The script is locked and cannot be modified.");
+				return;
+			}
 			if (JOptionPane.showConfirmDialog(this.getParent(), "Are you absolutely sure you want to do this?") 
 				!= JOptionPane.YES_OPTION) return;
 			boolean ok = true;
