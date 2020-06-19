@@ -3,6 +3,7 @@ package org.covid;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
+import java.net.HttpURLConnection;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.border.*;
@@ -13,6 +14,7 @@ import org.rsna.ui.ApplicationProperties;
 import org.rsna.ui.SourcePanel;
 import org.rsna.util.BrowserUtil;
 import org.rsna.util.FileUtil;
+import org.rsna.util.HttpUtil;
 import org.rsna.util.ImageIOTools;
 import org.rsna.util.JarUtil;
 import org.rsna.util.StringUtil;
@@ -25,7 +27,7 @@ import org.w3c.dom.Node;
  */
 public class CovidClient extends JFrame {
 
-    private String					windowTitle = "CovidClient - version 4";
+    private String					windowTitle = "CovidClient - v5";
     private JPanel					splitPanel;
     private WelcomePanel			welcomePanel;
     private SCUPanel				scuPanel;
@@ -75,6 +77,7 @@ public class CovidClient extends JFrame {
 		logger = Logger.getLogger(CovidClient.class);
 		logPanel = LogPanel.getInstance();
 
+		//Load the configuration singleton
 		Configuration config = Configuration.getInstance();
 		
 		//Initialize the SITEID
@@ -112,22 +115,22 @@ public class CovidClient extends JFrame {
 			windowTitle += " - " + date;
 		}
 		catch (Exception ignore) { }
-		
 		setTitle(windowTitle);
 		addWindowListener(new WindowCloser(this));
 		mainPanel = new MainPanel();
 		getContentPane().add(mainPanel, BorderLayout.CENTER);
 		
+		//Construct the UI
 		welcomePanel = WelcomePanel.getInstance();
 		scuPanel = SCUPanel.getInstance();
 		scpPanel = SCPPanel.getInstance();
 		sourcePanel = new SourcePanel(config.getProps(), "Directory", config.background);
 		rightPanel = new RightPanel(sourcePanel);
 		JSplitPane jSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, sourcePanel, rightPanel);
-		jSplitPane.setResizeWeight(0.5D);
+		jSplitPane.setResizeWeight(0.5d);
 		jSplitPane.setContinuousLayout(true);
 		splitPanel = new JPanel(new BorderLayout());
-		splitPanel.add(jSplitPane,BorderLayout.CENTER);
+		splitPanel.add(jSplitPane, BorderLayout.CENTER);
 		
 		anonymizerPanel = new AnonymizerPanel();
 		viewerPanel = new Viewer();
@@ -167,6 +170,20 @@ public class CovidClient extends JFrame {
 		positionFrame();
 		setVisible(true);
 		System.out.println("Initialization complete");
+		
+		//Check the registration
+		if (!isRegistered(propsSITEID)) {
+			RegistrationDialog dialog = new RegistrationDialog(propsSITEID);
+			if (dialog.show(this)) {
+				if (!register(propsSITEID, 
+						 dialog.getParam("email"),
+						 dialog.getParam("sitename"),
+						 dialog.getParam("username"))) {
+					exit();
+				}
+			}
+			else exit();
+		}
     }
     
 	class MainPanel extends JPanel implements ChangeListener {
@@ -258,7 +275,41 @@ public class CovidClient extends JFrame {
 			else if (comp.equals(logPanel)) logPanel.reload();
 		}
 	}
+	
+	private boolean isRegistered(String siteID) {
+		try {
+			String url = Configuration.getInstance().getProps().getProperty("regURL", "http://upload.open-qic.org:80");
+			url += "/qicadmin/check?siteID="+siteID;
+			HttpURLConnection conn = HttpUtil.getConnection(url);
+			conn.setReadTimeout(120 * 1000);
+			conn.setConnectTimeout(20 * 1000);
+			conn.setRequestMethod("GET");
+			conn.connect();
+			int responseCode = conn.getResponseCode();
+			return (responseCode == 200);
+		}
+		catch (Exception unable) { unable.printStackTrace(); return false; }
+	}
 
+	private boolean register(String siteID, String email, String sitename, String username) {
+		try {
+			String url = Configuration.getInstance().getProps().getProperty("regURL", "http://upload.open-qic.org:80");
+			url += "/qicadmin/create" + "?siteID="+siteID + "&email="+email + "&sitename="+sitename + "&username="+username;
+			HttpURLConnection conn = HttpUtil.getConnection(url);
+			conn.setReadTimeout(120 * 1000);
+			conn.setConnectTimeout(20 * 1000);
+			conn.setRequestMethod("GET");
+			conn.connect();
+			int responseCode = conn.getResponseCode();
+			return (responseCode == 200);
+		}
+		catch (Exception unable) { return false; }
+	}
+
+	public void exit() {
+		dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
+	}
+	
     class WindowCloser extends WindowAdapter {
 		JFrame parent;
 		public WindowCloser(JFrame parent) {
