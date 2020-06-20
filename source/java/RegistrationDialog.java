@@ -8,18 +8,18 @@ public class RegistrationDialog extends DialogPanel {
 
 	String siteID;
 
-	public RegistrationDialog(String siteID) {
+	public RegistrationDialog(String siteID, String email, String sitename, String username) {
 		super();
 		this.siteID = siteID;
 		addH("Register Your Site");
 		addP("Enter your institution name", "left");
-		addParam("sitename", "Institution", "", false);
+		addParam("sitename", "Institution", sitename, false);
 		space(5);
 		addP("Enter your name", "left");
-		addParam("username", "Name", "", false);
+		addParam("username", "Name", username, false);
 		space(5);
 		addP("Enter your email address", "left");
-		addParam("email", "Email", "", false);
+		addParam("email", "Email", email, false);
 		space(5);
 	}
 	

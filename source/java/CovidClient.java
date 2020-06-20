@@ -172,19 +172,42 @@ public class CovidClient extends JFrame {
 		System.out.println("Initialization complete");
 		
 		//Check the registration
-		if (!isRegistered(propsSITEID)) {
-			RegistrationDialog dialog = new RegistrationDialog(propsSITEID);
-			if (dialog.show(this)) {
-				if (!register(propsSITEID, 
-						 dialog.getParam("email"),
-						 dialog.getParam("sitename"),
-						 dialog.getParam("username"))) {
-					exit();
+		boolean requireRegistration = !config.getProps().getProperty("requireRegistration","yes").equals("no");
+		if (requireRegistration && !isRegistered(propsSITEID)) {
+			RegistrationDialog dialog = new RegistrationDialog(propsSITEID, "", "", "");
+			boolean registered = false;
+			while (dialog.show(this)) {
+				String email = dialog.getParam("email");
+				String sitename = dialog.getParam("sitename");
+				String username = dialog.getParam("username");
+				if (!sitename.equals("") && !username.equals("") && isValidEmail(email)) {
+					if (registered = register(propsSITEID, email, sitename, username)) {
+						break;
+					}
+					else {
+						JOptionPane.showMessageDialog(this,
+									"The server refused the registration.",
+									"Register",
+									JOptionPane.ERROR_MESSAGE);
+						exit();
+					}
+				}
+				else {
+					JOptionPane.showMessageDialog(this,
+					 			"Please enter all fields and ensure\n"
+					 			+"that the email address is valid.",
+					 			"Register",
+					 			JOptionPane.ERROR_MESSAGE);
 				}
 			}
-			else exit();
+			if (!registered) exit();
 		}
     }
+    
+	private boolean isValidEmail(String email) {
+      String regex = "^[\\w-_\\.+]*[\\w-_\\.]\\@([\\w]+\\.)+[\\w]+[\\w]$";
+      return email.matches(regex);
+	}
     
 	class MainPanel extends JPanel implements ChangeListener {
 		public JTabbedPane tabbedPane;

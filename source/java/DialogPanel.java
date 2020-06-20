@@ -33,7 +33,7 @@ public class DialogPanel extends JPanel {
 	
 	public String getParam(String name) {
 		JTextField jtf = fields.get(name);
-		return (jtf != null) ? jtf.getText() : "";	
+		return (jtf != null) ? jtf.getText().trim() : "";	
 	}
 
 	public void addH(String text) {
