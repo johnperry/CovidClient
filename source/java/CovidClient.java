@@ -174,14 +174,19 @@ public class CovidClient extends JFrame {
 		//Check the registration
 		boolean requireRegistration = !config.getProps().getProperty("requireRegistration","yes").equals("no");
 		if (requireRegistration && !isRegistered(propsSITEID)) {
-			RegistrationDialog dialog = new RegistrationDialog(propsSITEID, "", "", "");
+			RegistrationDialog dialog = new RegistrationDialog(propsSITEID, "", "", "", "", "", "", "");
 			boolean registered = false;
 			while (dialog.show(this)) {
-				String email = dialog.getParam("email");
-				String sitename = dialog.getParam("sitename");
 				String username = dialog.getParam("username");
-				if (!sitename.equals("") && !username.equals("") && isValidEmail(email)) {
-					if (registered = register(propsSITEID, email, sitename, username)) {
+				String email = dialog.getParam("email");
+				String phone = dialog.getParam("phone");
+				String sitename = dialog.getParam("sitename");
+				String adrs1 = dialog.getParam("adrs1");
+				String adrs2 = dialog.getParam("adrs2");
+				String adrs3 = dialog.getParam("adrs3");
+				String accept = dialog.getParam("accept");
+				if (!sitename.equals("") && !username.equals("") && isValidEmail(email) && !accept.equals("")) {
+					if (registered = register(propsSITEID, username, email, phone, sitename, adrs1, adrs2, adrs3)) {
 						break;
 					}
 					else {
@@ -314,10 +319,20 @@ public class CovidClient extends JFrame {
 		catch (Exception unable) { unable.printStackTrace(); return false; }
 	}
 
-	private boolean register(String siteID, String email, String sitename, String username) {
+	private boolean register(
+				String siteID, 
+				String username, 
+				String email, 
+				String phone, 
+				String sitename, 
+				String adrs1, 
+				String adrs2, 
+				String adrs3) {
 		try {
 			String url = Configuration.getInstance().getProps().getProperty("regURL", "http://upload.open-qic.org:80");
-			url += "/qicadmin/create" + "?siteID="+siteID + "&email="+email + "&sitename="+sitename + "&username="+username;
+			url += "/qicadmin/create" 
+				+ "?siteID="+siteID + "&username="+username + "&email="+email + "&phone="+phone 
+				+ "&sitename="+sitename + "&adrs1="+adrs1 + "&adrs2="+adrs2 + "&adrs3="+adrs3 ;
 			HttpURLConnection conn = HttpUtil.getConnection(url);
 			conn.setReadTimeout(120 * 1000);
 			conn.setConnectTimeout(20 * 1000);

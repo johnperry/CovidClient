@@ -8,18 +8,33 @@ public class RegistrationDialog extends DialogPanel {
 
 	String siteID;
 
-	public RegistrationDialog(String siteID, String email, String sitename, String username) {
+	public RegistrationDialog(
+				String siteID, 
+				String username, 
+				String email, 
+				String phone, 
+				String sitename, 
+				String adrs1, 
+				String adrs2, 
+				String adrs3) {
 		super();
 		this.siteID = siteID;
 		addH("Register Your Site");
-		addP("Enter your institution name", "left");
-		addParam("sitename", "Institution", sitename, false);
-		space(5);
-		addP("Enter your name", "left");
+		//addP("Enter your name", "left");
 		addParam("username", "Name", username, false);
 		space(5);
-		addP("Enter your email address", "left");
+		//addP("Enter your email address", "left");
 		addParam("email", "Email", email, false);
+		space(5);
+		//addP("Enter your telephone number", "left");
+		addParam("phone", "Telephone", phone, false);
+		space(5);
+		//addP("Enter your institution name", "left");
+		addParam("sitename", "Institution Name", sitename, false);
+		addParam("adrs1", "Address", adrs1, false);
+		addParam("adrs2", "", adrs2, false);
+		addParam("adrs3", "", adrs3, false);
+		addCheckBox("accept","I agree to the Creative Commons attribution license.");
 		space(5);
 	}
 	

@@ -19,7 +19,7 @@ public class DialogPanel extends JPanel {
 	private static final Font labelFont = new Font( "SansSerif", Font.BOLD, 12 );
 	private static final Font fieldFont = new Font( "Monospaced", Font.PLAIN, 12 );
 	private static final int fieldWidth = 30;
-	private Hashtable<String,JTextField> fields;
+	private Hashtable<String,JComponent> fields;
 	private String title = "";
 	private boolean sessionMode = false;
 	
@@ -28,12 +28,22 @@ public class DialogPanel extends JPanel {
 		super();
 		setBorder(BorderFactory.createEmptyBorder(0,0,0,10));
 		setLayout(new RowLayout());
-		fields = new Hashtable<String,JTextField>();
+		fields = new Hashtable<String,JComponent>();
 	}
 	
 	public String getParam(String name) {
-		JTextField jtf = fields.get(name);
-		return (jtf != null) ? jtf.getText().trim() : "";	
+		JComponent jc = fields.get(name);
+		if (jc != null) {
+			if (jc instanceof JTextField) {
+				JTextField jtf = (JTextField)jc;
+				return jtf.getText().trim();
+			}
+			else if (jc instanceof JCheckBox) {
+				JCheckBox jcb = (JCheckBox)jc;
+				return (jcb.isSelected() ? "checked" : "");
+			}
+		}
+		return "";
 	}
 
 	public void addH(String text) {
@@ -52,7 +62,7 @@ public class DialogPanel extends JPanel {
 			else if (align.equals("right")) h.setAlignmentX(1.0f);
 			else h.setAlignmentX(0.5f);
 
-			add(h, new Integer(2));
+			add(h, RowLayout.span(2));
 			add(RowLayout.crlf());
 			add(Box.createVerticalStrut(5));
 			add(RowLayout.crlf());
@@ -103,6 +113,14 @@ public class DialogPanel extends JPanel {
 			add(jlb);
 		}
 
+		add(RowLayout.crlf());
+	}
+	
+	public void addCheckBox(String name, String label) {
+		JCheckBox jcb = new JCheckBox(label);
+		jcb.setFont(labelFont);
+		add(jcb, RowLayout.span(2));
+		fields.put(name, jcb);
 		add(RowLayout.crlf());
 	}
 	
