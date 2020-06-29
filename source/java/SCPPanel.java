@@ -220,12 +220,17 @@ public class SCPPanel extends BasePanel implements ActionListener, KeyListener {
 	
 	// Anonymize the selected file(s).
 	private boolean anonymize(File file) {
-		String filterScript = FilterPanel.getInstance().getText().trim();
-		boolean filterSRs = FilterPanel.getInstance().getFilterSRs();
+		FilterPanel fp = FilterPanel.getInstance();
+		String filterScript = fp.getText().trim();
+		boolean filterSRs = fp.getFilterSRs();
+		boolean filterSCs = fp.getFilterSCs();
+		boolean acceptRFs = fp.getAcceptRFs();
 		boolean filterResult = true;
 		cp.print(Color.black, file.getName());
 		DicomObject dob;
 		if ( ((dob=getDicomObject(file)) != null)
+				&& ( dob.isImage() )
+				&& ( !filterSCs || !dob.isSecondaryCapture() || (acceptRFs && dob.isReformatted()) )
 				&& ( !filterSRs || !dob.isSR() )
 				&& ( filterResult=((filterScript.length() == 0) || dob.matches(filterScript)) ) ) {
 			File temp;
@@ -304,8 +309,10 @@ public class SCPPanel extends BasePanel implements ActionListener, KeyListener {
 		}
 		else {
 			if (dob == null) cp.println(Color.red,"    File rejected (not a DICOM file)");
+			else if (!dob.isImage()) cp.println(Color.red,"    File rejected (not an image)");
+			else if (filterSRs && dob.isSR()) cp.println(Color.red,"    File rejected (Structured Report)");
+			else if (filterSCs && dob.isSecondaryCapture()) cp.println(Color.red,"    File rejected (Secondary Capture)");
 			else if (!filterResult) cp.println(Color.red,"    File rejected (filter)");
-			else if (filterSRs && dob.isSR()) cp.println(Color.red,"    File rejected (SR)");
 			else cp.println(Color.red,"    File rejected (unknown reason)");
 			return false;
 		}
