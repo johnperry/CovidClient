@@ -124,6 +124,23 @@ public class DialogPanel extends JPanel {
 		add(RowLayout.crlf());
 	}
 	
+	public void addSelectableTextArea(String name, String text) {
+		JCheckBox jcb = new JCheckBox("");
+		jcb.setFont(labelFont);
+		jcb.setAlignmentX(1.0f);
+		add(jcb);
+		JTextArea jta = new JTextArea();
+		jta.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
+		jta.setWrapStyleWord(true);
+		jta.setLineWrap(true);
+		jta.setText(text);
+		jta.setEditable(false);
+		jta.setPreferredSize(new Dimension(210,290));
+		add(jta);
+		fields.put(name, jcb);
+		add(RowLayout.crlf());
+	}
+	
 	public void space(int v) {
 		add(Box.createVerticalStrut(v));
 		add(RowLayout.crlf());

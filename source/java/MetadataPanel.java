@@ -147,6 +147,7 @@ public class MetadataPanel extends JPanel implements ActionListener {
 			centerPanel.addRadioPanelRow("HeartDisease", yesNoUnspecified, 2);
 			centerPanel.addRadioPanelRow("RespiratoryDisease", yesNoUnspecified, 2);
 			centerPanel.addRadioPanelRow("Diabetes", yesNoUnspecified, 2);
+			centerPanel.addRadioPanelRow("CovidPositive", yesNoUnspecified, 2);
 			
 			insertSymptoms();
 			
