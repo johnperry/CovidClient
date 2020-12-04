@@ -179,11 +179,11 @@ public class CovidClient extends JFrame {
 			while (dialog.show(this)) {
 				String username = dialog.getParam("username");
 				String email = dialog.getParam("email");
-				String phone = ""; //dialog.getParam("phone");
+				String phone = dialog.getParam("phone");
 				String sitename = dialog.getParam("sitename");
-				String adrs1 = ""; //dialog.getParam("adrs1");
-				String adrs2 = ""; //dialog.getParam("adrs2");
-				String adrs3 = ""; //dialog.getParam("adrs3");
+				String adrs1 = dialog.getParam("adrs1");
+				String adrs2 = dialog.getParam("adrs2");
+				String adrs3 = dialog.getParam("adrs3");
 				String accept = dialog.getParam("accept");
 				if (!sitename.equals("") && !username.equals("") && isValidEmail(email) && !accept.equals("")) {
 					if (registered = register(propsSITEID, username, email, phone, sitename, adrs1, adrs2, adrs3)) {
